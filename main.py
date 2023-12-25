@@ -1,4 +1,15 @@
 import pickle
+"""
+This code loads a pre-trained sentiment analysis model and exposes it as a REST API endpoint for making predictions.
+
+It loads the trained model from a file, and the tokenizer used during training for preprocessing new data. It expects the tokenizer to have been serialized using pickle.
+
+The main endpoint is /predict which takes a JSON payload with a "tweet" field, preprocesses the tweet text, tokenizes and pads it, feeds it to the model to make a prediction, and returns the prediction result and label.
+
+The preprocessing uses a simple placeholder function that would need to match whatever preprocessing was done during training. 
+
+The code runs the Flask app in debug mode when executed directly.
+"""
 import tensorflow as tf
 import numpy as np
 from flask import Flask, request, jsonify
@@ -40,12 +51,11 @@ def predict():
     padded_seq = pad_sequences(seq, maxlen=200)
 
     # Lakukan prediksi
-    prediction = model.predict(padded_seq)
-    pred_label = np.where(prediction > 0.5, 1, 0)
-    result = 'Negative' if pred_label == 1 else 'Postive'
+    prediction = model.predict(padded_seq)[0][0]
+    result = 'Negative' if prediction == 1 else 'Postive'
     # Kirim respons
     response = {
-        'prediction': int(pred_label[0][0]),
+        'prediction': str(prediction),
         'result': result
     }
     return jsonify(response)
